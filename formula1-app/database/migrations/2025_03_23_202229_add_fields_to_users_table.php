@@ -22,12 +22,17 @@ class AddFieldsToUsersTable extends Migration
         $table->string('avatar')->nullable()->after('role');
       }
 
-      if (!Schema::hasColumn('users', 'country_code')) {
-        $table->string('country_code', 2)->nullable()->after('avatar');
+      if (!Schema::hasColumn('users', 'country_id')) {
+        $table->unsignedBigInteger('country_id')->nullable()->after('avatar');
+        
+        $table->foreign('country_id')
+              ->references('country_id')
+              ->on('countries')
+              ->onDelete('set null');
       }
 
       if (!Schema::hasColumn('users', 'favorite_driver_id') && $driversExists) {
-        $table->unsignedBigInteger('favorite_driver_id')->nullable()->after('country_code');
+        $table->unsignedBigInteger('favorite_driver_id')->nullable()->after('country_id');
         $table->foreign('favorite_driver_id')->references('driver_id')->on('drivers')->onDelete('set null');
       }
 
@@ -55,9 +60,13 @@ class AddFieldsToUsersTable extends Migration
 
       // Luego eliminar columnas
       $columnsToRemove = [];
-      foreach (['role', 'avatar', 'country_code', 'favorite_driver_id', 'favorite_constructor_id'] as $column) {
+      foreach (['role', 'avatar', 'country_id', 'favorite_driver_id', 'favorite_constructor_id'] as $column) {
         if (Schema::hasColumn('users', $column)) {
           $columnsToRemove[] = $column;
+        }
+
+        if (Schema::hasColumn('users', 'country_id')) {
+          $table->dropForeign(['country_id']);
         }
       }
 
