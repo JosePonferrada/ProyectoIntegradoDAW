@@ -6,6 +6,7 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
