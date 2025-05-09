@@ -29,6 +29,8 @@ class ConstructorResource extends JsonResource
       'created_at' => $this->created_at,
       'updated_at' => $this->updated_at,
       'drivers' => DriverResource::collection($this->whenLoaded('drivers')),
+      'current_drivers' => $this->getAttribute('current_drivers') ?? [],
+      'driver_season_year' => $this->getAttribute('driver_season_year'),
       'championships' => $this->whenCounted('championships'),
       'wins' => $this->whenCounted('raceResults', function () {
         return $this->raceResults->where('position', 1)->count();
