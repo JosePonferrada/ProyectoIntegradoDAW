@@ -24,6 +24,7 @@ class CircuitResource extends JsonResource
       'lap_record_driver' => $this->lap_record_driver,
       'lap_record_year' => $this->lap_record_year,
       'map_image' => $this->map_image,
+      'layout_image' => $this->layout_image,
       'description' => $this->description,
       'created_at' => $this->created_at,
       'updated_at' => $this->updated_at,

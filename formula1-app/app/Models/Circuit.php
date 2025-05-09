@@ -19,6 +19,7 @@ class Circuit extends Model
     'lap_record_driver',
     'lap_record_year',
     'map_image',
+    'layout_image',
     'description'
   ];
 
