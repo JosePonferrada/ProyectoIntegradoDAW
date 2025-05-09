@@ -29,6 +29,11 @@ class Constructor extends Model
     return $this->belongsTo(Country::class, 'nationality');
   }
 
+  public function nationality(): BelongsTo
+  {
+    return $this->belongsTo(Country::class, 'nationality');
+  }
+
   public function drivers(): BelongsToMany
   {
     return $this->belongsToMany(
@@ -67,5 +72,33 @@ class Constructor extends Model
   public function standings(): HasMany
   {
     return $this->hasMany(ConstructorStanding::class, 'constructor_id');
+  }
+
+  public function currentDrivers()
+  {
+    try {
+        // Don't rely on finding current year, get the latest season ID from the existing pivot table
+        $latestSeasonId = \DB::table('driver_constructor_seasons')
+            ->select('season_id')
+            ->orderBy('season_id', 'desc')
+            ->first()
+            ?->season_id;
+            
+        if (!$latestSeasonId) {
+            \Log::info('No driver constructor seasons found');
+            return $this->belongsToMany(Driver::class)->whereRaw('1=0');
+        }
+        
+        \Log::info("Using season ID {$latestSeasonId} for constructor {$this->name}");
+        
+        $driverQuery = $this->belongsToMany(Driver::class, 'driver_constructor_seasons', 'constructor_id', 'driver_id')
+            ->withPivot(['position_number'])
+            ->where('driver_constructor_seasons.season_id', $latestSeasonId);
+        
+        return $driverQuery;
+    } catch (\Exception $e) {
+        \Log::error('Error in currentDrivers relation: ' . $e->getMessage());
+        return $this->belongsToMany(Driver::class)->whereRaw('1=0');
+    }
   }
 }

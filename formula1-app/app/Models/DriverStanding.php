@@ -30,4 +30,9 @@ class DriverStanding extends Model
   {
     return $this->belongsTo(Race::class, 'race_id');
   }
+
+  public function constructor(): BelongsTo
+  {
+    return $this->belongsTo(Constructor::class, 'constructor_id');
+  }
 }

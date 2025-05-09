@@ -17,7 +17,7 @@ class ConstructorStandingResource extends JsonResource
     return [
       'id' => $this->id,
       'season' => new SeasonResource($this->whenLoaded('season')),
-      'constructor' => new ConstructorResource($this->whenLoaded('constructor')),
+      'constructor' => $this->when(isset($this->constructor), $this->constructor),
       'race' => new RaceResource($this->whenLoaded('race')),
       'points' => $this->points,
       'position' => $this->position,
