@@ -54,6 +54,15 @@ class SeasonsSeeder extends Seeder
         'reigning_champion_driver' => $driverMapping['Verstappen'] ?? null,
         'reigning_champion_constructor' => $constructorMapping['Red Bull Racing'] ?? null,
         'regulation_changes' => 'Ajustes menores a las regulaciones técnicas y formato de carrera sprint.'
+      ],
+      [
+        'year' => 2025,
+        'races_count' => 24,
+        'start_date' => '2025-03-01',
+        'end_date' => '2025-12-07',
+        'reigning_champion_driver' => null,
+        'reigning_champion_constructor' => null,
+        'regulation_changes' => 'Nuevas regulaciones aerodinámicas para mejorar las carreras en circuitos urbanos y reducción del peso mínimo de los coches.'
       ]
     ];
 
