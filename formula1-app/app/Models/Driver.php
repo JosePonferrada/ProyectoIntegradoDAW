@@ -39,6 +39,24 @@ class Driver extends Model
     return $this->belongsTo(Country::class, 'nationality');
   }
 
+  // Used on standings page
+  public function nationality(): BelongsTo
+  {
+    return $this->belongsTo(Country::class, 'nationality');
+  }
+
+  public function currentTeam() {
+    $currentYear = date('Y');
+  
+    return $this->belongsToMany(Constructor::class, 'driver_constructor_seasons', 'driver_id', 'constructor_id')
+                ->withPivot('position_number')
+                ->join('seasons', 'driver_constructor_seasons.season_id', '=', 'seasons.season_id')
+                ->where('seasons.year', $currentYear)
+                ->limit(1);
+  }
+
+  // ===========================
+
   public function constructors(): BelongsToMany
   {
     return $this->belongsToMany(
@@ -56,7 +74,8 @@ class Driver extends Model
       'driver_constructor_seasons',
       'driver_id',
       'season_id'
-    );
+    )->withPivot('constructor_id', 'position_number')
+      ->withTimestamps();
   }
 
   public function championships(): HasMany
@@ -82,5 +101,16 @@ class Driver extends Model
   public function getFullNameAttribute(): string
   {
     return "{$this->first_name} {$this->last_name}";
+  }
+
+  public function currentConstructor()
+  {
+    $currentYear = date('Y');
+    
+    return $this->belongsToMany(Constructor::class, 'driver_constructor_seasons', 'driver_id', 'constructor_id')
+                ->withPivot('position_number')
+                ->join('seasons', 'driver_constructor_seasons.season_id', '=', 'seasons.season_id')
+                ->where('seasons.year', $currentYear)
+                ->limit(1);
   }
 }
