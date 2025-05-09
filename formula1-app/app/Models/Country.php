@@ -11,6 +11,7 @@ class Country extends Model
   protected $primaryKey = 'country_id';
 
   protected $fillable = [
+    'country_id',
     'name',
     'code',
     'flag_img'
@@ -29,5 +30,10 @@ class Country extends Model
   public function drivers(): HasMany
   {
     return $this->hasMany(Driver::class, 'nationality');
+  }
+
+  public function users(): HasMany
+  {
+    return $this->hasMany(User::class, 'country_id');
   }
 }
