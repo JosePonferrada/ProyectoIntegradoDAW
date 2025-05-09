@@ -24,13 +24,39 @@ class Race extends Model
     'status',
     'weather_conditions',
     'avg_temperature',
-    'notes'
+    'notes',
+    // Campos de la migración
+    'practice1_date',
+    'practice1_time',
+    'practice2_date',
+    'practice2_time',
+    'practice3_date',
+    'practice3_time',
+    'qualifying_date',
+    'qualifying_time',
+    'sprint_qualifying_date',
+    'sprint_qualifying_time',
+    'sprint_date',
+    'sprint_time',
+    'weekend_format',
   ];
 
   protected $casts = [
     'race_date' => 'date',
     'start_time' => 'datetime',
     'race_duration' => 'datetime',
+    'practice1_date' => 'date',
+    'practice1_time' => 'datetime',
+    'practice2_date' => 'date',
+    'practice2_time' => 'datetime',
+    'practice3_date' => 'date',
+    'practice3_time' => 'datetime',
+    'qualifying_date' => 'date',
+    'qualifying_time' => 'datetime',
+    'sprint_qualifying_date' => 'date',
+    'sprint_qualifying_time' => 'datetime',
+    'sprint_date' => 'date',
+    'sprint_time' => 'datetime',
   ];
 
   public function season(): BelongsTo

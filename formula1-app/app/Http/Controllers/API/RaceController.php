@@ -35,6 +35,20 @@ class RaceController extends Controller
       'weather_conditions' => 'nullable|string|max:255',
       'avg_temperature' => 'nullable|numeric',
       'notes' => 'nullable|string',
+      // Campos de la migración
+      'practice1_date' => 'nullable|date',
+      'practice1_time' => 'nullable',
+      'practice2_date' => 'nullable|date',
+      'practice2_time' => 'nullable',
+      'practice3_date' => 'nullable|date',
+      'practice3_time' => 'nullable',
+      'qualifying_date' => 'nullable|date',
+      'qualifying_time' => 'nullable',
+      'sprint_qualifying_date' => 'nullable|date',
+      'sprint_qualifying_time' => 'nullable',
+      'sprint_date' => 'nullable|date',
+      'sprint_time' => 'nullable',
+      'weekend_format' => 'nullable|string|in:traditional,sprint'
     ]);
 
     $race = Race::create($validated);
@@ -71,6 +85,20 @@ class RaceController extends Controller
       'weather_conditions' => 'nullable|string|max:255',
       'avg_temperature' => 'nullable|numeric',
       'notes' => 'nullable|string',
+      // Campos de la migración
+      'practice1_date' => 'nullable|date',
+      'practice1_time' => 'nullable',
+      'practice2_date' => 'nullable|date',
+      'practice2_time' => 'nullable',
+      'practice3_date' => 'nullable|date',
+      'practice3_time' => 'nullable',
+      'qualifying_date' => 'nullable|date',
+      'qualifying_time' => 'nullable',
+      'sprint_qualifying_date' => 'nullable|date',
+      'sprint_qualifying_time' => 'nullable',
+      'sprint_date' => 'nullable|date',
+      'sprint_time' => 'nullable',
+      'weekend_format' => 'nullable|string|in:traditional,sprint'
     ]);
 
     $race->update($validated);
@@ -83,5 +111,16 @@ class RaceController extends Controller
     $race->delete();
 
     return response()->noContent();
+  }
+
+  public function getRacesBySeason($seasonId)
+  {
+    $races = \App\Models\Race::where('season_id', $seasonId)
+        ->orderBy('race_date', 'asc')
+        ->get();
+    
+    return response()->json([
+        'data' => $races
+    ]);
   }
 }
