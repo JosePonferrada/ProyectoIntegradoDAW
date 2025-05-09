@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,40 +16,59 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-  /**
-   * Show the registration page.
-   */
-  public function create(): Response
-  {
-    return Inertia::render('auth/Register');
-  }
+    /**
+     * Display the registration view.
+     */
+    public function create(): Response
+    {
+        // Cargar datos para selects
+        $countries = \App\Models\Country::all();
+        $drivers = \App\Models\Driver::select('driver_id', 'first_name', 'last_name')->get();
+        $constructors = \App\Models\Constructor::select('constructor_id', 'name')->get();
+        
+        return Inertia::render('auth/Register', [
+            'countries' => $countries,
+            'drivers' => $drivers,
+            'constructors' => $constructors,
+        ]);
+    }
 
-  /**
-   * Handle an incoming registration request.
-   *
-   * @throws \Illuminate\Validation\ValidationException
-   */
-  public function store(Request $request): RedirectResponse
-  {
-    $request->validate([
-      'name' => 'required|string|max:255',
-      'username' => 'required|string|max:50|unique:users|alpha_dash',
-      'email' => 'required|string|email|max:255|unique:users',
-      'password' => 'required|string|confirmed|min:8',
-    ]);
+    /**
+     * Handle an incoming registration request.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'country_id' => 'nullable|integer|exists:countries,country_id', // Cambiar a country_id
+            'favorite_driver_id' => 'nullable|integer|exists:drivers,driver_id',
+            'favorite_constructor_id' => 'nullable|integer|exists:constructors,constructor_id',
+            'avatar' => 'nullable|image|max:2048', // Validación para imágenes, máximo 2MB
+        ]);
+        
+        // Gestionar el avatar si se sube uno
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        }
+        
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'country_id' => $request->country_id, // Cambiar a country_id
+            'favorite_driver_id' => $request->favorite_driver_id,
+            'favorite_constructor_id' => $request->favorite_constructor_id,
+            'avatar' => $avatarPath,
+            'role' => 'user',
+        ]);
 
-    $user = User::create([
-      'name' => $request->name,
-      'username' => $request->username,
-      'email' => $request->email,
-      'password' => Hash::make($request->password),
-      'role' => 'user',
-    ]);
+        event(new Registered($user));
 
-    event(new Registered($user));
+        Auth::login($user);
 
-    Auth::login($user);
-
-    return to_route('dashboard');
-  }
+        return redirect(RouteServiceProvider::HOME);
+    }
 }

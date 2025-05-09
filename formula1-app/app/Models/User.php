@@ -25,9 +25,9 @@ class User extends Authenticatable
     'password',
     'role',
     'avatar',
-    'country_code',
+    'country_id',
     'favorite_driver_id',
-    'favorite_team_id',
+    'favorite_constructor_id',
   ];
 
   /**
@@ -61,6 +61,11 @@ class User extends Authenticatable
   public function favoriteConstructor()
   {
     return $this->belongsTo(\App\Models\Constructor::class, 'favorite_constructor_id');
+  }
+
+  public function country()
+  {
+    return $this->belongsTo(\App\Models\Country::class, 'country_id');
   }
 
   public function isAdmin()

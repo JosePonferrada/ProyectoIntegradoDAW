@@ -17,14 +17,11 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
-            ],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($this->user()->id)],
+            'country_id' => ['nullable', 'exists:countries,country_id'],
+            'favorite_driver_id' => ['nullable', 'exists:drivers,driver_id'],
+            'favorite_constructor_id' => ['nullable', 'exists:constructors,constructor_id'],
+            'avatar' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }
