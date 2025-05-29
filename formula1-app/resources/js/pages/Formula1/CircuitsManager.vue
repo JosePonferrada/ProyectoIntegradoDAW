@@ -1,5 +1,5 @@
 <script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, computed, onMounted, defineProps, watch } from 'vue';
 import axios from 'axios'; // Para llamar a tu API
 import { useForm } from '@inertiajs/vue3'; // Útil si quieres reusar para modales/formularios
