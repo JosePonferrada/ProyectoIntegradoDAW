@@ -4,7 +4,7 @@ import { Head, usePage, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import axios from 'axios';
 import CountryFlag from '@/components/CountryFlag.vue';
-import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal.vue';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
 
 // Estados
 const drivers = ref([]);

@@ -536,10 +536,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import AppLayout from '@/Layouts/AppLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { router, Link, Head } from '@inertiajs/vue3';
 import axios from 'axios';
-import ConfirmationDialog from '@/Components/ConfirmationDialog.vue';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 
 // Cargar las propiedades con los países
 const props = defineProps({
