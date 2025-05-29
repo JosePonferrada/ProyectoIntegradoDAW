@@ -49,7 +49,7 @@ Route::middleware('guest')->group(function () {
 
 Route::get('dashboard', function () {
   return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 // Rutas API
 Route::prefix('api')->group(function () {
@@ -68,17 +68,21 @@ Route::prefix('api')->group(function () {
   Route::get('/seasons/{seasonId}/driver-progression', [App\Http\Controllers\API\DriverStandingController::class, 'getDriverProgressionBySeason']);
   Route::get('/seasons/{seasonId}/constructor-progression', [App\Http\Controllers\API\ConstructorStandingController::class, 'getConstructorProgressionBySeason']);
   Route::get('/seasons/{seasonId}/races', [App\Http\Controllers\API\RaceController::class, 'getRacesBySeason']);
-  Route::post('/races/{race}/update-standings', [DriverStandingController::class, 'updateStandingsAfterRace']);
+  Route::get('/seasons/{season}/main-drivers', [App\Http\Controllers\API\DriverController::class, 'getMainDriversForSeason'])->name('api.seasons.main-drivers');
+  Route::post('/races/{race}/update-standings', [DriverStandingController::class, 'updateStandingsAfterRace'])->middleware(['auth', 'admin']); 
 
   Route::get('/races/{id}', [RaceController::class, 'show']);
   Route::get('/race-results', [RaceResultController::class, 'index']);
   Route::get('/qualifying-results', [QualifyingResultController::class, 'index']);
 
   Route::get('races/{race}/steward-decisions', [StewardDecisionController::class, 'getByRace']);
-  Route::post('steward-decisions', [StewardDecisionController::class, 'store'])->middleware('auth');
+  Route::post('steward-decisions', [StewardDecisionController::class, 'store'])->middleware(['auth', 'admin']); 
   Route::get('steward-decisions/{id}/download', [StewardDecisionController::class, 'download']);
-  Route::post('steward-decisions/generate', [StewardDecisionController::class, 'generateFromTemplate'])->middleware('auth');
-  Route::delete('steward-decisions/{id}', [StewardDecisionController::class, 'destroy']);
+  Route::post('steward-decisions/generate', [StewardDecisionController::class, 'generateFromTemplate'])->middleware(['auth', 'admin']); 
+  Route::delete('steward-decisions/{id}', [StewardDecisionController::class, 'destroy'])->middleware(['auth', 'admin']); 
+
+  Route::post('/race-results/bulk', [RaceResultController::class, 'storeBulk'])->middleware(['auth', 'admin']); 
+  Route::post('/qualifying-results/bulk', [QualifyingResultController::class, 'bulkStore'])->middleware(['auth', 'admin']); 
 });
 
 // Rutas de la aplicación
@@ -93,14 +97,14 @@ Route::middleware(['auth'])->group(function () {
     return Inertia::render('Formula1/CreateDriver', [
       'countries' => $countries
     ]);
-  })->name('drivers.create');
+  })->name('drivers.create')->middleware('admin'); 
 
   Route::get('/drivers/{driver}/edit', function (\App\Models\Driver $driver) {
     return Inertia::render('Formula1/EditDriver', [
       'driver_id' => $driver->driver_id,
       'countries' => \App\Models\Country::all()
     ]);
-  })->name('drivers.edit');
+  })->name('drivers.edit')->middleware('admin'); 
 
   // Constructors routes
   Route::get('/constructors', function () {
@@ -112,14 +116,14 @@ Route::middleware(['auth'])->group(function () {
     return Inertia::render('Formula1/CreateConstructor', [
       'countries' => $countries
     ]);
-  })->name('constructors.create')->middleware('admin');
+  })->name('constructors.create')->middleware('admin'); 
 
   Route::get('/constructors/{constructor}/edit', function (\App\Models\Constructor $constructor) {
     return Inertia::render('Formula1/EditConstructor', [
       'constructor_id' => $constructor->constructor_id,
       'countries' => \App\Models\Country::all()
     ]);
-  })->name('constructors.edit');
+  })->name('constructors.edit')->middleware('admin'); 
 
   Route::get('/circuits', function () {
     return Inertia::render('Formula1/Circuits');
@@ -136,31 +140,57 @@ Route::middleware(['auth'])->group(function () {
   Route::get('/races/{id}', [WebRaceController::class, 'show'])->name('races.show');
   Route::get('/formula1/races/create', function () {
     return Inertia::render('Formula1/RaceCreate');
-})->name('formula1.races.create');
+  })->name('formula1.races.create')->middleware('admin'); 
 
-Route::get('/formula1/races/{id}/edit', function ($id) {
-    return Inertia::render('Formula1/RaceEdit', [
-        'id' => $id
-    ]);
-})->name('formula1.races.edit');
+  Route::get('/formula1/races/{id}/edit', function ($id) {
+      return Inertia::render('Formula1/RaceEdit', [
+          'id' => $id
+      ]);
+  })->name('formula1.races.edit')->middleware('admin'); 
+
+  Route::get('/predictions', [App\Http\Controllers\Predictions\PredictionController::class, 'index'])
+        ->name('predictions.index')->middleware('auth', 'verified');
+  Route::get('/predictions/race/{race}', [App\Http\Controllers\Predictions\PredictionController::class, 'create'])
+      ->name('predictions.create');
+  Route::post('/predictions', [App\Http\Controllers\Predictions\PredictionController::class, 'store'])
+      ->name('predictions.store');
+  Route::get('/predictions/leaderboard', [App\Http\Controllers\Predictions\PredictionController::class, 'leaderboard'])
+      ->name('predictions.leaderboard');
+
+  Route::middleware(['auth', 'admin'])->group(function () { // Este grupo ya aplica admin
+    Route::post('/admin/predictions/calculate/{race}', [App\Http\Controllers\Predictions\PredictionController::class, 'calculatePoints'])
+        ->name('admin.predictions.calculate');
+  });
+
+  Route::middleware(['admin'])->group(function () { // Este grupo ya aplica admin
+        Route::get('/formula1/manage-circuits', function () {
+            return Inertia::render('Formula1/CircuitsManager', [
+                'countries' => \App\Models\Country::orderBy('name')->get(['country_id', 'name']), // Pasa los países necesarios
+            ]);
+        })->name('formula1.circuits.manage');
+    });
+
+  Route::get('/live-timing-wip', function () {
+    return Inertia::render('Formula1/LiveTimingWIP');
+  })->name('live-timing.wip')->middleware('verified'); 
 });
 
-Route::get('/debug-images', function() {
-  $drivers = \App\Models\Driver::all(['driver_id', 'first_name', 'last_name', 'image']);
-  foreach ($drivers as $driver) {
-      echo "ID: {$driver->driver_id}, Nombre: {$driver->first_name} {$driver->last_name}, Imagen: {$driver->image}<br>";
+// Route::get('/debug-images', function() {
+//   $drivers = \App\Models\Driver::all(['driver_id', 'first_name', 'last_name', 'image']);
+//   foreach ($drivers as $driver) {
+//       echo "ID: {$driver->driver_id}, Nombre: {$driver->first_name} {$driver->last_name}, Imagen: {$driver->image}<br>";
       
-      // Verificar si el archivo existe físicamente
-      if ($driver->image) {
-          $fullPath = public_path("storage/drivers/{$driver->image}");
-          echo "¿Existe? " . (file_exists($fullPath) ? "SÍ" : "NO") . " - Ruta: {$fullPath}<br>";
+//       // Verificar si el archivo existe físicamente
+//       if ($driver->image) {
+//           $fullPath = public_path("storage/drivers/{$driver->image}");
+//           echo "¿Existe? " . (file_exists($fullPath) ? "SÍ" : "NO") . " - Ruta: {$fullPath}<br>";
           
-          $alternativePath = public_path("storage/{$driver->image}");
-          echo "¿Existe alternativa? " . (file_exists($alternativePath) ? "SÍ" : "NO") . " - Ruta: {$alternativePath}<br>";
-      }
-      echo "<hr>";
-  }
-});
+//           $alternativePath = public_path("storage/{$driver->image}");
+//           echo "¿Existe alternativa? " . (file_exists($alternativePath) ? "SÍ" : "NO") . " - Ruta: {$alternativePath}<br>";
+//       }
+//       echo "<hr>";
+//   }
+// });
 
 Route::get('/races/{race}/calendar.ics', [App\Http\Controllers\CalendarController::class, 'downloadIcs'])
     ->name('races.calendar.ics');
