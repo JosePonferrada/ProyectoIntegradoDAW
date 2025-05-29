@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class CircuitResource extends JsonResource
 {
@@ -25,6 +26,8 @@ class CircuitResource extends JsonResource
       'lap_record_year' => $this->lap_record_year,
       'map_image' => $this->map_image,
       'layout_image' => $this->layout_image,
+      'map_image_url' => $this->map_image ? Storage::url($this->map_image) : null,
+      'layout_image_url' => $this->layout_image ? Storage::url($this->layout_image) : null,
       'description' => $this->description,
       'created_at' => $this->created_at,
       'updated_at' => $this->updated_at,

@@ -2,10 +2,13 @@
   <div class="space-y-6">
     <!-- Información principal del circuito -->
     <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden">
-      <div v-if="circuit?.map_image" class="w-full h-64 bg-gray-200 overflow-hidden">
-        <img :src="`/storage/${circuit.map_image}`" 
+      <div class="w-full h-64 bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+        <img v-if="circuit?.map_image && !mapImageError"
+             :src="`/storage/${circuit.map_image}`" 
              :alt="circuit.name" 
-             class="w-full h-full object-cover">
+             class="w-full h-full object-cover"
+             @error="onMapImageError">
+        <i v-else class="fas fa-image fa-4x text-gray-400 dark:text-gray-500"></i>
       </div>
       
       <div class="p-6">
@@ -59,14 +62,14 @@
           Circuit Layout
         </h3>
         
-        <div v-if="circuit?.layout_image" class="bg-white dark:bg-gray-800 rounded-md overflow-hidden mb-4">
-          <!-- Aquí limitamos la altura máxima a 300px o el valor que prefieras -->
-          <div class="relative h-[300px] overflow-hidden">
+        <div v-if="circuit?.layout_image && !layoutImageError" 
+             class="bg-white dark:bg-gray-800 rounded-md overflow-hidden mb-4">
+          <div class="relative h-[300px] overflow-hidden flex items-center justify-center bg-gray-200 dark:bg-gray-700">
             <img :src="`/storage/${circuit.layout_image}`" 
                  :alt="`${circuit.name} layout`" 
-                 class="object-contain">
+                 class="object-contain max-h-full max-w-full"
+                 @error="onLayoutImageError">
             
-            <!-- Botón para expandir (opcional) -->
             <button 
               @click="showFullLayout = true" 
               class="absolute bottom-2 right-2 bg-gray-800/70 text-white p-2 rounded-full hover:bg-gray-700/90"
@@ -76,7 +79,9 @@
             </button>
           </div>
         </div>
-        <div v-else class="bg-gray-100 dark:bg-gray-800 text-center py-16 rounded-md">
+        <div v-else 
+             class="bg-gray-100 dark:bg-gray-800 text-center py-10 rounded-md flex flex-col items-center justify-center min-h-[150px]">
+          <i class="fas fa-drafting-compass fa-3x text-gray-400 dark:text-gray-500 mb-2"></i>
           <p class="text-gray-500 dark:text-gray-400">Circuit layout not available</p>
         </div>
       </div>
@@ -95,10 +100,13 @@
     <div v-if="showFullLayout && circuit?.layout_image" 
          class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
          @click="showFullLayout = false">
-      <div class="relative max-w-4xl max-h-[90vh] w-full">
-        <img :src="`/storage/${circuit.layout_image}`" 
+      <div class="relative max-w-4xl max-h-[90vh] w-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+        <img v-if="!modalLayoutImageError"
+             :src="`/storage/${circuit.layout_image}`" 
              :alt="`${circuit.name} layout`" 
-             class="w-full h-full object-contain">
+             class="w-full h-full object-contain"
+             @error="onModalLayoutImageError">
+        <i v-else class="fas fa-exclamation-triangle fa-5x text-red-500"></i>
         <button 
           @click.stop="showFullLayout = false" 
           class="absolute top-2 right-2 bg-gray-800/70 text-white p-2 rounded-full hover:bg-red-500/90"
@@ -112,11 +120,13 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 import CountryFlag from '@/components/CountryFlag.vue';
 
-// Agregar esta referencia para controlar el modal
 const showFullLayout = ref(false);
+const mapImageError = ref(false);
+const layoutImageError = ref(false);
+const modalLayoutImageError = ref(false);
 
 const props = defineProps({
   circuit: {
@@ -125,4 +135,23 @@ const props = defineProps({
     default: null
   }
 });
+
+// Resetear errores de imagen cuando el circuito cambie
+watch(() => props.circuit, (newCircuit) => {
+  mapImageError.value = false;
+  layoutImageError.value = false;
+  modalLayoutImageError.value = false;
+}, { deep: true });
+
+function onMapImageError() {
+  mapImageError.value = true;
+}
+
+function onLayoutImageError() {
+  layoutImageError.value = true;
+}
+
+function onModalLayoutImageError() {
+  modalLayoutImageError.value = true;
+}
 </script>
