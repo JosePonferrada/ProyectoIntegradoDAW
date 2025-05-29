@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Mailer
@@ -36,7 +35,6 @@ return [
     */
 
     'mailers' => [
-
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
@@ -94,7 +92,6 @@ return [
                 'postmark',
             ],
         ],
-
     ],
 
     /*
@@ -113,4 +110,20 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'markdown' => [
+        'theme' => 'default',
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+
+        'colors' => [
+            'header' => '#1F2937',     // dark gray
+            'body' => '#FFFFFF',       // white
+            'subcopy' => '#CBD5E1',    // light gray
+            'footer' => '#CBD5E1',     // light gray
+            'button' => '#E10600',     // F1 red 
+            'border' => '#E10600',     // F1 red
+        ],
+    ],
 ];
