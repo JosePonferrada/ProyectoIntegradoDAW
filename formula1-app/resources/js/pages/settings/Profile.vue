@@ -65,7 +65,7 @@ const removeAvatar = () => {
 const submit = () => {
     // Validación manual
     if (!form.name || !form.email) {
-        alert('Por favor, completa todos los campos obligatorios.');
+        alert('Please complete all required fields.');
         return;
     }
     
@@ -102,12 +102,12 @@ const submit = () => {
     // Enviar usando POST con _method=PATCH
     axios.post(route('profile.update'), formData)
         .then(response => {
-            alert('Perfil actualizado correctamente');
+            alert('Profile updated successfully');
             window.location.reload(); // Recargar para mostrar los cambios
         })
         .catch(error => {
-            console.error('Errores de validación:', error.response?.data);
-            alert('Error al actualizar el perfil');
+            console.error('Validation errors:', error.response?.data);
+            alert('Error updating profile');
         });
 };
 
@@ -138,12 +138,12 @@ const selectedCountry = computed(() => {
 
 <template>
     <AppLayout>
-        <Head title="Mi Perfil" />
+        <Head title="My Profile" />
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <h1 class="text-2xl font-bold mb-6 dark:text-white">Mi Perfil</h1>
+                    <h1 class="text-2xl font-bold mb-6 dark:text-white">My Profile</h1>
 
                     <!-- Mensaje de estado -->
                     <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
@@ -176,7 +176,7 @@ const selectedCountry = computed(() => {
                                 <!-- Botones para cambiar o eliminar avatar -->
                                 <div class="flex space-x-2">
                                     <label class="cursor-pointer bg-f1-red hover:bg-red-700 text-white py-2 px-4 rounded-md text-sm">
-                                        Cambiar Avatar
+                                        Change Avatar
                                         <input 
                                             type="file" 
                                             class="hidden" 
@@ -191,7 +191,7 @@ const selectedCountry = computed(() => {
                                         @click="removeAvatar"
                                         class="py-2 px-4 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
                                     >
-                                        Eliminar Avatar
+                                        Remove Avatar
                                     </button>
                                 </div>
                             </div>
@@ -202,7 +202,7 @@ const selectedCountry = computed(() => {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Nombre
+                                            Name
                                         </label>
                                         <input 
                                             id="name" 
@@ -217,7 +217,7 @@ const selectedCountry = computed(() => {
                                     
                                     <div>
                                         <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Correo Electrónico
+                                            Email
                                         </label>
                                         <input 
                                             id="email" 
@@ -238,7 +238,7 @@ const selectedCountry = computed(() => {
                                         v-model="form.country_id" 
                                         class="mt-1 block w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm"
                                     >
-                                        <option value="">Selecciona tu país</option>
+                                        <option value="">Select your country</option>
                                         <option 
                                             v-for="country in countries" 
                                             :key="country.country_id" 
@@ -260,14 +260,14 @@ const selectedCountry = computed(() => {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="driver" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Piloto Favorito
+                                            Favorite Driver
                                         </label>
                                         <select 
                                             id="driver" 
                                             v-model="form.favorite_driver_id" 
                                             class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100"
                                         >
-                                            <option value="">Selecciona tu piloto favorito</option>
+                                            <option value="">Select your favorite driver</option>
                                             <option 
                                                 v-for="driver in drivers" 
                                                 :key="driver.driver_id" 
@@ -281,14 +281,14 @@ const selectedCountry = computed(() => {
                                     
                                     <div>
                                         <label for="constructor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Escudería Favorita
+                                            Favorite Team
                                         </label>
                                         <select 
                                             id="constructor" 
                                             v-model="form.favorite_constructor_id" 
                                             class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100"
                                         >
-                                            <option value="">Selecciona tu escudería favorita</option>
+                                            <option value="">Select your favorite team</option>
                                             <option 
                                                 v-for="constructor in constructors" 
                                                 :key="constructor.constructor_id" 
@@ -310,40 +310,40 @@ const selectedCountry = computed(() => {
                                 class="px-4 py-2 bg-f1-red text-white rounded-md hover:bg-red-700 focus:outline-none transition"
                                 :disabled="form.processing"
                             >
-                                Guardar Cambios
+                                Save Changes
                             </button>
                         </div>
                     </form>
 
                     <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-                        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Cambiar Contraseña</h2>
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Change Password</h2>
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            Asegúrate de usar una contraseña segura para proteger tu cuenta.
+                            Ensure your account is using a long, random password to stay secure.
                         </p>
                         <div class="mt-4">
                             <Link :href="route('password.edit')" 
                                 class="px-4 py-2 bg-gray-800 dark:bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                                Cambiar Contraseña
+                                Change Password
                             </Link>
                         </div>
                     </div>
 
                     <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-                        <h2 class="text-xl font-semibold text-red-600 dark:text-red-400">Eliminar Cuenta</h2>
+                        <h2 class="text-xl font-semibold text-red-600 dark:text-red-400">Delete Account</h2>
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            Elimina tu cuenta y todos sus recursos asociados.
+                            Permanently delete your account and all associated resources.
                         </p>
                         
                         <div class="mt-6 space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-800/20 dark:bg-red-900/10">
                             <div class="space-y-1 text-red-600 dark:text-red-300">
-                                <p class="font-medium">Advertencia</p>
-                                <p class="text-sm">Procede con precaución, esta acción no se puede deshacer.</p>
+                                <p class="font-medium">Warning</p>
+                                <p class="text-sm">Proceed with caution, this action cannot be undone.</p>
                             </div>
                             <button 
                                 @click="confirmDeleteAccount" 
                                 class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none transition"
                             >
-                                Eliminar cuenta
+                                Delete Account
                             </button>
                         </div>
                     </div>

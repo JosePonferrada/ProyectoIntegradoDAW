@@ -48,17 +48,17 @@ defineExpose({
             <form @submit="deleteUser" class="space-y-4">
                 <div>
                     <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                        ¿Estás seguro de que quieres eliminar tu cuenta?
+                        Are you sure you want to delete your account?
                     </h2>
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        Una vez que tu cuenta sea eliminada, todos sus recursos y datos se borrarán permanentemente.
-                        Introduce tu contraseña para confirmar.
+                        Once your account is deleted, all of its resources and data will be permanently erased.
+                        Please enter your password to confirm.
                     </p>
                 </div>
 
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Contraseña
+                        Password
                     </label>
                     <input 
                         id="password" 
@@ -78,14 +78,14 @@ defineExpose({
                         class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
                         @click="close"
                     >
-                        Cancelar
+                        Cancel
                     </button>
                     <button 
                         type="submit" 
                         class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                         :disabled="form.processing"
                     >
-                        Eliminar cuenta
+                        Delete Account
                     </button>
                 </div>
             </form>

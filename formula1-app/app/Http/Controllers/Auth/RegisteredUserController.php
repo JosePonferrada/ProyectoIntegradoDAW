@@ -40,7 +40,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email:rfc,dns|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'country_id' => 'nullable|integer|exists:countries,country_id', // Cambiar a country_id
             'favorite_driver_id' => 'nullable|integer|exists:drivers,driver_id',
