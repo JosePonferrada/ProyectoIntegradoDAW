@@ -35,6 +35,9 @@ class ConstructorResource extends JsonResource
       'wins' => $this->whenCounted('raceResults', function () {
         return $this->raceResults->where('position', 1)->count();
       }),
+      'constructors' => $this->whenLoaded('constructors', function() {
+        return ConstructorResource::collection($this->constructors);
+      }),
     ];
   }
 }

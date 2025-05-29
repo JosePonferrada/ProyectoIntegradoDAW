@@ -1,5 +1,6 @@
 <template>
-  <AppLayout>
+  <AppLayout :title="`Teams`">
+    <Head title="Teams" />
     <div class="py-6">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -370,7 +371,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Link, usePage, router } from '@inertiajs/vue3';
+import { Link, usePage, router, Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import CountryFlag from '@/components/CountryFlag.vue';
 
