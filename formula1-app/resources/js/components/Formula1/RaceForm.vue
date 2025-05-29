@@ -286,8 +286,7 @@
           class="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-f1-red focus:border-transparent shadow-sm"
         >
           <option value="Scheduled">Scheduled</option>
-          <option value="Confirmed">Confirmed</option>
-          <option value="Ongoing">Ongoing</option>
+          <option value="In Progress">In Progress</option>
           <option value="Completed">Completed</option>
           <option value="Postponed">Postponed</option>
           <option value="Cancelled">Cancelled</option>
@@ -295,6 +294,73 @@
         <p v-if="errors.status" class="mt-1 text-sm text-red-600">{{ errors.status[0] }}</p>
       </div>
     </div>
+
+    <!-- Post-Race Details (Conditional) -->
+    <template v-if="form.status === 'Completed'">
+      <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">Post-Race Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="race_duration" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Race Duration (HH:MM:SS)</label>
+            <input 
+              id="race_duration" 
+              v-model="form.race_duration" 
+              type="text" 
+              placeholder="e.g., 01:30:00"
+              class="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-f1-red focus:border-transparent shadow-sm"
+            />
+            <p v-if="errors.race_duration" class="mt-1 text-sm text-red-600">{{ errors.race_duration[0] }}</p>
+          </div>
+
+          <div>
+            <label for="completed_laps" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Completed Laps</label>
+            <input 
+              id="completed_laps" 
+              v-model="form.completed_laps" 
+              type="number" 
+              min="0"
+              class="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-f1-red focus:border-transparent shadow-sm"
+            />
+            <p v-if="errors.completed_laps" class="mt-1 text-sm text-red-600">{{ errors.completed_laps[0] }}</p>
+          </div>
+
+          <div>
+            <label for="weather_conditions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weather Conditions</label>
+            <input 
+              id="weather_conditions" 
+              v-model="form.weather_conditions" 
+              type="text" 
+              class="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-f1-red focus:border-transparent shadow-sm"
+            />
+            <p v-if="errors.weather_conditions" class="mt-1 text-sm text-red-600">{{ errors.weather_conditions[0] }}</p>
+          </div>
+
+          <div>
+            <label for="avg_temperature" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Average Temperature (°C)</label>
+            <input 
+              id="avg_temperature" 
+              v-model="form.avg_temperature" 
+              type="number" 
+              step="0.1"
+              class="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-f1-red focus:border-transparent shadow-sm"
+            />
+            <p v-if="errors.avg_temperature" class="mt-1 text-sm text-red-600">{{ errors.avg_temperature[0] }}</p>
+          </div>
+          
+          <div class="md:col-span-2">
+            <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+            <textarea 
+              id="notes" 
+              v-model="form.notes" 
+              rows="3"
+              class="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-f1-red focus:border-transparent shadow-sm"
+            ></textarea>
+            <p v-if="errors.notes" class="mt-1 text-sm text-red-600">{{ errors.notes[0] }}</p>
+          </div>
+
+        </div>
+      </div>
+    </template>
     
     <!-- Botones de acción -->
     <div class="flex justify-end space-x-3">
@@ -361,7 +427,12 @@ const form = ref({
   scheduled_laps: '',
   distance: '',
   status: 'Scheduled',
-  weekend_format: 'traditional'
+  weekend_format: 'traditional',
+  race_duration: '',
+  completed_laps: '',
+  weather_conditions: '',
+  avg_temperature: '',
+  notes: ''
 });
 
 // Cargar datos iniciales
@@ -470,7 +541,12 @@ function populateForm() {
     scheduled_laps: raceData.scheduled_laps || '',
     distance: raceData.distance || '',
     status: raceData.status || 'Scheduled',
-    weekend_format: raceData.weekend_format || 'traditional'
+    weekend_format: raceData.weekend_format || 'traditional',
+    race_duration: raceData.race_duration || '',
+    completed_laps: raceData.completed_laps || '',
+    weather_conditions: raceData.weather_conditions || '',
+    avg_temperature: raceData.avg_temperature || '',
+    notes: raceData.notes || ''
   };
   
   // Debug: mostrar valores formateados en consola

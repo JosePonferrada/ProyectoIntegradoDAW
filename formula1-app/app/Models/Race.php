@@ -10,6 +10,8 @@ class Race extends Model
 {
   protected $primaryKey = 'race_id';
 
+  protected $appends = ['actual_fastest_lap_driver', 'actual_dnf_count'];
+
   protected $fillable = [
     'name',
     'season_id',
@@ -89,8 +91,46 @@ class Race extends Model
     return $this->hasMany(ConstructorStanding::class, 'race_id');
   }
 
+  public function getActualFastestLapDriverAttribute()
+  {
+    // Usamos la relación 'results' que ya tienes definida
+    $fastestResult = $this->results() // Accede a la relación RaceResult
+                         ->whereNotNull('fastest_lap_time') // Asegúrate que haya un tiempo de vuelta rápida
+                         ->orderBy('fastest_lap_time', 'asc') // La vuelta más rápida es el menor tiempo
+                         ->first(); // Obtén el primer resultado (el más rápido)
+
+    // Si se encuentra un resultado, devuelve el modelo Driver asociado
+    // Asume que tu modelo RaceResult tiene una relación 'driver'
+    return $fastestResult ? $fastestResult->driver : null;
+  }
+
+  public function getActualDnfCountAttribute()
+  {
+    if (!$this->relationLoaded('results')) {
+      $this->load('results');
+    }
+
+    $dnfStatuses = ['DNF', 'DNS'];
+    return $this->results->whereIn('status', $dnfStatuses)->count();
+  }
+
   public function stewardDecisions(): HasMany
   {
     return $this->hasMany(StewardDecision::class, 'race_id');
+  }
+
+  public function predictions()
+  {
+    return $this->hasMany(RacePrediction::class, 'race_id', 'race_id');
+  }
+
+// Add a boot method to automatically delete related predictions when a race is deleted
+protected static function boot()
+  {
+    parent::boot();
+    
+    static::deleting(function($race) {
+        $race->predictions()->delete();
+    });
   }
 }

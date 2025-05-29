@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Qualifying Results</h2>
     
     <div v-if="loading" class="text-center py-8">
       <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-f1-red mx-auto"></div>
@@ -42,13 +41,13 @@
                 </div>
               </td>
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                {{ result.q1_time || '-' }}
+                {{ formatDisplayTime(result.q1_time) }}
               </td>
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                {{ result.q2_time || '-' }}
+                {{ formatDisplayTime(result.q2_time) }}
               </td>
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                {{ result.q3_time || '-' }}
+                {{ formatDisplayTime(result.q3_time) }}
               </td>
             </tr>
           </tbody>
@@ -67,13 +66,17 @@ const props = defineProps({
   loading: Boolean
 });
 
-// Determinar el color para cada constructor
+function formatDisplayTime(timeString) {
+  if (!timeString) return '-';
+  if (timeString.startsWith('00:')) {
+    return timeString.substring(3); // Quita "00:"
+  }
+  return timeString;
+}
+
 function constructorColor(constructor) {
   if (!constructor) return '#cccccc';
-  
   const name = constructor.name || '';
-  
-  // Mapeo flexible de colores para constructores
   if (name.includes('Mercedes')) return '#00D2BE';
   if (name.includes('Ferrari')) return '#DC0000';
   if (name.includes('Red Bull')) return '#0600EF';
@@ -82,14 +85,11 @@ function constructorColor(constructor) {
   if (name.includes('Racing Bulls')) return '#2B4562';
   if (name.includes('Aston Martin')) return '#006F62';
   if (name.includes('Williams')) return '#005AFF';
-  if (name.includes('Kick')) return '#900000';
-  if (name.includes('Haas')) return '#FFFFFF';
-  
-  // Color por defecto si no hay coincidencias
+  if (name.includes('Kick Sauber') || name.includes('Sauber')) return '#52E252';
+  if (name.includes('Haas')) return '#B6B6B6';
   return '#cccccc';
 }
 
-// Obtener clase para posiciones especiales
 function getPositionClass(position) {
   if (position === 1) {
     return 'font-bold text-yellow-600 dark:text-yellow-400';

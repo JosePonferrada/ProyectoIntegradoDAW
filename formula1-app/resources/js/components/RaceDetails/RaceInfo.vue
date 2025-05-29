@@ -71,7 +71,7 @@
             Schedule
           </h3>
 
-          <CalendarButton v-if="race?.id" :race="race" />
+          <CalendarButton v-if="race?.id" :race="race" :user-timezone="userTimezone" :format-date-time-fn="formatDateTimeFn" />
         </div>
         
         <!-- Weekend Format Badge -->
@@ -89,7 +89,7 @@
         <ul class="space-y-2">
           <li v-if="race?.practice1_date" class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-300">Practice 1:</span>
-            <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.practice1_date, race.practice1_time) }}</span>
+            <span class="text-gray-900 dark:text-white">{{ props.formatDateTimeFn(race.practice1_date, race.practice1_time, props.userTimezone) }}</span>
           </li>
           
           <!-- Conditional rendering based on weekend format -->
@@ -97,19 +97,15 @@
             <!-- Sprint Format (Current: P1, SQ, Sprint, Q, Race) -->
             <li v-if="race?.sprint_qualifying_date" class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-300">Sprint Qualifying:</span>
-              <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.sprint_qualifying_date, race.sprint_qualifying_time) }}</span>
-            </li>
-            <li v-if="race?.practice2_date" class="flex justify-between">
-              <span class="text-gray-600 dark:text-gray-300">Practice 2:</span>
-              <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.practice2_date, race.practice2_time) }}</span>
+              <span class="text-gray-900 dark:text-white">{{ props.formatDateTimeFn(race.sprint_qualifying_date, race.sprint_qualifying_time, props.userTimezone) }}</span>
             </li>
             <li v-if="race?.sprint_date" class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-300">Sprint:</span>
-              <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.sprint_date, race.sprint_time) }}</span>
+              <span class="text-gray-900 dark:text-white">{{ props.formatDateTimeFn(race.sprint_date, race.sprint_time, props.userTimezone) }}</span>
             </li>
             <li v-if="race?.qualifying_date" class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-300">Qualifying:</span>
-              <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.qualifying_date, race.qualifying_time) }}</span>
+              <span class="text-gray-900 dark:text-white">{{ props.formatDateTimeFn(race.qualifying_date, race.qualifying_time, props.userTimezone) }}</span>
             </li>
           </template>
 
@@ -117,22 +113,22 @@
             <!-- Traditional Format (P1, P2, P3, Q, Race) -->
             <li v-if="race?.practice2_date" class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-300">Practice 2:</span>
-              <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.practice2_date, race.practice2_time) }}</span>
+              <span class="text-gray-900 dark:text-white">{{ props.formatDateTimeFn(race.practice2_date, race.practice2_time, props.userTimezone) }}</span>
             </li>
             <li v-if="race?.practice3_date" class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-300">Practice 3:</span>
-              <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.practice3_date, race.practice3_time) }}</span>
+              <span class="text-gray-900 dark:text-white">{{ props.formatDateTimeFn(race.practice3_date, race.practice3_time, props.userTimezone) }}</span>
             </li>
             <li v-if="race?.qualifying_date" class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-300">Qualifying:</span>
-              <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.qualifying_date, race.qualifying_time) }}</span>
+              <span class="text-gray-900 dark:text-white">{{ props.formatDateTimeFn(race.qualifying_date, race.qualifying_time, props.userTimezone) }}</span>
             </li>
           </template>
           
           <!-- Race is always shown regardless of format -->
           <li v-if="race?.race_date" class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-300">Race:</span>
-            <span class="text-gray-900 dark:text-white">{{ formatDateTime(race.race_date, race.start_time) }}</span>
+            <span class="text-gray-900 dark:text-white">{{ props.formatDateTimeFn(race.race_date, race.start_time, props.userTimezone) }}</span>
           </li>
         </ul>
       </div>
@@ -219,6 +215,14 @@ const props = defineProps({
   isAdmin: {
     type: Boolean,
     default: false
+  },
+  userTimezone: {
+    type: String,
+    required: true
+  },
+  formatDateTimeFn: {
+    type: Function,
+    required: true
   }
 });
 
@@ -278,48 +282,6 @@ async function deleteRace() {
 }
 
 // Resto de tus funciones existentes...
-function formatDateTime(date, time) {
-  if (!date) return 'TBA';
-  
-  try {
-    // Procesar la fecha
-    let dateObj;
-    
-    if (time) {
-      // Extraer solo la fecha de race_date (YYYY-MM-DD)
-      const datePart = date.split('T')[0];
-      
-      // Extraer solo la hora de start_time (HH:MM)
-      // Nota: En este caso estamos usando la hora de start_time pero con la fecha de race_date
-      const timePart = time.split('T')[1].substring(0, 5); // Tomar solo HH:MM
-      
-      // Combinar correctamente
-      dateObj = new Date(`${datePart}T${timePart}`);
-    } else {
-      // Si solo hay fecha, usarla directamente
-      dateObj = new Date(date);
-    }
-    
-    // Verificar que la fecha sea válida
-    if (isNaN(dateObj.getTime())) {
-      console.error('Invalid date object:', { date, time, dateObj });
-      return 'Date pending';
-    }
-    
-    return dateObj.toLocaleString('es-ES', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: time ? '2-digit' : undefined,
-      minute: time ? '2-digit' : undefined
-    });
-  } catch (error) {
-    console.error('Error formatting date:', error, { date, time });
-    return 'Date pending';
-  }
-}
-
 function getWeekendFormatLabel() {
   if (!props.race?.weekend_format) return 'Traditional Weekend';
   
@@ -342,16 +304,16 @@ function getWeekendFormatClass() {
 function getWeatherIcon(conditions) {
   const conditionsLower = conditions.toLowerCase();
   
-  if (conditionsLower.includes('despejado') || conditionsLower.includes('soleado')) {
+  if (conditionsLower.includes('clear') || conditionsLower.includes('sunny')) {
     return 'fas fa-sun text-yellow-500';
-  } else if (conditionsLower.includes('nublado') || conditionsLower.includes('nubes')) {
-    if (conditionsLower.includes('parcialmente')) {
+  } else if (conditionsLower.includes('cloudy') || conditionsLower.includes('nublado')) {
+    if (conditionsLower.includes('partly cloudy') || conditionsLower.includes('parcialmente nublado')) {
       return 'fas fa-cloud-sun text-gray-400';
     }
     return 'fas fa-cloud text-gray-400';
-  } else if (conditionsLower.includes('lluvia') || conditionsLower.includes('lloviendo')) {
+  } else if (conditionsLower.includes('rain') || conditionsLower.includes('rainy') || conditionsLower.includes('lloviendo')) {
     return 'fas fa-cloud-rain text-blue-400';
-  } else if (conditionsLower.includes('tormenta')) {
+  } else if (conditionsLower.includes('storm') || conditionsLower.includes('thunderstorm')) {
     return 'fas fa-bolt text-yellow-400';
   } else {
     return 'fas fa-cloud text-gray-400'; // Icono por defecto
@@ -363,13 +325,11 @@ function confirmDelete() {
 }
 
 onMounted(() => {
-  console.log('Race data:', props.race);
-  console.log('Race date:', props.race?.race_date);
-  console.log('Start time:', props.race?.start_time);
+  console.log('RaceInfo Race data:', props.race);
   
-  // Probar el formateo directamente
-  if (props.race?.race_date) {
-    console.log('Formatted date test:', formatDateTime(props.race.race_date, props.race.start_time));
+  // Probar el formateo directamente usando la función de props
+  if (props.race?.race_date && props.formatDateTimeFn) {
+    console.log('RaceInfo Formatted date test (from props):', props.formatDateTimeFn(props.race.race_date, props.race.start_time, props.userTimezone));
   }
 });
 </script>
