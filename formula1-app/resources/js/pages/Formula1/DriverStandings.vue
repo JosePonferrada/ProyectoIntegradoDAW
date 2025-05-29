@@ -236,9 +236,12 @@ const loadStandings = async () => {
 const loadSeasonProgression = async () => {
   try {
     const response = await axios.get(`/api/seasons/${selectedSeason.value}/driver-progression`);
+    console.log('API Response for seasonProgression:', response.data); // <--- AÑADE ESTO
     seasonProgression.value = response.data || null;
+    console.log('Assigned seasonProgression.value:', seasonProgression.value); // <--- Y ESTO
   } catch (error) {
     console.error('Error loading progression data:', error);
+    seasonProgression.value = null; // Asegúrate de resetear en caso de error
   }
 };
 
