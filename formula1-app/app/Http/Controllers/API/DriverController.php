@@ -361,4 +361,9 @@ class DriverController extends Controller
       return false;
     }
   }
+
+  public function getMainDriversForSeason($seasonId) {
+    $drivers = Driver::getMainDriversForSeason($seasonId);
+    return DriverResource::collection($drivers);
+  }
 }

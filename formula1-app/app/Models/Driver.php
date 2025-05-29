@@ -113,4 +113,31 @@ class Driver extends Model
                 ->where('seasons.year', $currentYear)
                 ->limit(1);
   }
+
+  // Obtenemos los pilotos principales de la temporada elegida
+  public static function getMainDriversForSeason(int $seasonId)
+  {
+      return self::whereHas('seasons', function ($query) use ($seasonId) {
+          $query->where('seasons.season_id', $seasonId)
+                ->whereIn('driver_constructor_seasons.position_number', [1, 2]);
+      })
+      ->with([
+          'nationality',
+          // Carga la relación 'constructors' y filtra por la seasonId actual
+          // Asegúrate que la relación 'constructors' en este modelo Driver
+          // está definida con ->withPivot('season_id', 'position_number')
+          'constructors' => function ($query) use ($seasonId) {
+              $query->wherePivot('season_id', $seasonId);
+          }
+          // Puedes mantener la relación 'seasons' si la necesitas para otra cosa,
+          // pero para obtener el constructor de la temporada actual, 'constructors' es más directo.
+          // 'seasons' => function ($query) use ($seasonId) {
+          //     $query->where('seasons.season_id', $seasonId)
+          //           ->whereIn('driver_constructor_seasons.position_number', [1, 2]);
+          // }
+      ])
+      ->orderBy('last_name')
+      ->orderBy('first_name')
+      ->get();
+  }
 }

@@ -30,6 +30,13 @@ const compareDriver2 = ref({});
 const failedImages = ref(new Set());
 const loadingComparison = ref(false);
 
+// Añadir en la sección de refs/estado
+const notification = ref({
+  show: false,
+  message: '',
+  type: 'success' // 'success' o 'error'
+});
+
 // Variables para paginación
 const currentPage = ref(1);
 const itemsPerPage = ref(16); // 4 filas de 4 elementos en pantallas grandes
@@ -109,6 +116,20 @@ const fetchSeasons = async () => {
   } catch (error) {
     console.error('Error al cargar temporadas:', error);
   }
+};
+
+// Función para mostrar notificaciones
+const showNotification = (message, type = 'success') => {
+  notification.value = {
+    show: true,
+    message,
+    type
+  };
+  
+  // Auto-cerrar después de 5 segundos
+  setTimeout(() => {
+    notification.value.show = false;
+  }, 5000);
 };
 
 // Filtrar pilotos
@@ -224,28 +245,19 @@ const deleteDriver = async () => {
     // Actualizar la lista de pilotos sin recargar la página
     fetchDrivers();
     
-    // Mostrar notificación de éxito (usando flash message de Inertia)
-    if (route().has('flash')) {
-      router.visit(route('drivers'), {
-        preserveState: true,
-        only: ['flash'],
-        data: {
-          flash: {
-            message: 'Driver deleted successfully',
-            type: 'success'
-          }
-        }
-      });
-    }
+    // Mostrar notificación de éxito
+    showNotification(`${driverToDelete.value.first_name} ${driverToDelete.value.last_name} was successfully deleted`, 'success');
     
     // Cerrar ambos modales
     showDeleteModal.value = false;
-    showModal.value = false; // Añadir esta línea
+    showModal.value = false;
     driverToDelete.value = null;
-    currentDriver.value = null; // Opcional: limpiar referencia al piloto actual
+    currentDriver.value = null;
     
   } catch (error) {
     console.error('Error deleting driver:', error);
+    // Mostrar notificación de error
+    showNotification(`Failed to delete driver: ${error.response?.data?.message || error.message}`, 'error');
   } finally {
     isDeleting.value = false;
   }
@@ -436,6 +448,25 @@ onMounted(() => {
   <AppLayout>
     <Head title="Drivers" />
     
+    <!-- Sistema de notificaciones -->
+    <div 
+      v-if="notification.show" 
+      :class="[
+        'fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 transition-all duration-300',
+        notification.type === 'success' ? 'bg-green-500' : 'bg-red-500',
+        'text-white'
+      ]"
+    >
+      <div class="flex items-center">
+        <span>{{ notification.message }}</span>
+        <button @click="notification.show = false" class="ml-3 text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <div class="py-6">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Cabecera y búsqueda -->
