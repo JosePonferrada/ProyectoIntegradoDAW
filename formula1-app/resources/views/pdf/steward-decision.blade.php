@@ -86,7 +86,16 @@
     <div class="header">
         <img src="{{ storage_path('app/public/images/fia-f1-logo.png') }}" alt="FIA F1 Logo">
         <div class="header-text">FIA FORMULA 1 WORLD CHAMPIONSHIP</div>
-        <div class="grand-prix-title">{{ $race->year }} {{ strtoupper($race->name) }} GRAND PRIX</div>
+        @php
+            $raceNameDisplay = strtoupper($race->name);
+            // Comprobar si el nombre ya contiene "GRAND PRIX" o "GRAN PREMIO"
+            // str_contains es sensible a mayúsculas/minúsculas, por eso $raceNameDisplay ya está en mayúsculas
+            // y los términos de búsqueda también.
+            if (!str_contains($raceNameDisplay, 'GRAND PRIX') && !str_contains($raceNameDisplay, 'GRAN PREMIO') && !str_contains($raceNameDisplay, 'GRANDE PRÊMIO')) {
+                $raceNameDisplay .= ' GRAND PRIX';
+            }
+        @endphp
+        <div class="grand-prix-title">{{ $race->year }} {{ $raceNameDisplay }}</div>
         <div class="grand-prix-dates">{{ \Carbon\Carbon::parse($race->race_date)->format('d') }} - {{ \Carbon\Carbon::parse($race->race_date)->format('d') }} {{ \Carbon\Carbon::parse($race->race_date)->format('F Y') }}</div>
     </div>
 
