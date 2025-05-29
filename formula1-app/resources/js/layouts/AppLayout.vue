@@ -4,6 +4,7 @@ import { Link, usePage, router } from '@inertiajs/vue3';
 
 // Importar Head correctamente
 import { Head } from '@inertiajs/vue3';
+import EmailVerificationBanner from '@/components/EmailVerificationBanner.vue';
 
 // Estado para controlar el modo oscuro
 const darkMode = ref(false);
@@ -31,7 +32,8 @@ const navigation = [
   { name: 'Drivers', href: '/drivers' },
   { name: 'Teams', href: '/constructors' },
   { name: 'Races', href: '/races' },
-  { name: 'Standings', href: '/standings' }
+  { name: 'Standings', href: '/standings' },
+  { name: 'Predictions', href: '/predictions' },
 ];
 
 // Al montar el componente, verificar si el usuario ya tenía preferencia de tema
@@ -74,6 +76,9 @@ const logout = () => {
   <div>
     <Head :title="title" />
 
+    <!-- Añadir el banner DESPUÉS del Head y ANTES del contenido principal -->
+    <EmailVerificationBanner />
+
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
       <!-- Navegación superior -->
       <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -82,7 +87,7 @@ const logout = () => {
             <div class="flex">
               <div class="flex-shrink-0 flex items-center">
                 <Link href="/" class="font-bold text-xl text-f1-red">
-                  Formula 1 App
+                  <img src="/img/logo-f1.png" alt="F1 Logo" class="h-16 w-auto mr-2" />
                 </Link>
               </div>
               
