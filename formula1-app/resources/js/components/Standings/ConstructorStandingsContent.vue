@@ -348,29 +348,58 @@ const chartOptions = {
 
 // Datos para el gráfico de progresión
 const progressionData = computed(() => {
-  if (!seasonProgression.value || !seasonProgression.value.races) return null;
+  if (!seasonProgression.value || !seasonProgression.value.races || seasonProgression.value.races.length === 0) return null;
   
-  // Crear datasets para cada constructor (limitado a los mejores para claridad)
+  // Usar los constructores de la clasificación general para determinar cuáles mostrar en la progresión
   const topConstructors = constructorStandings.value
-    .sort((a, b) => a.position - b.position)
-    .slice(0, 8);
+    .filter(standing => standing.constructor) // Asegurarse que el constructor existe
+    .sort((a, b) => a.position - b.position);
   
   const datasets = topConstructors.map(standing => {
-    const color = getConstructorColor(standing.constructor?.name);
+    const constructorId = standing.constructor.constructor_id; // ID del constructor
+    const constructorName = standing.constructor.name || 'Unknown Constructor';
+    const color = getConstructorColor(constructorName);
+    
+    const accumulatedPointsData = [];
+    let lastPointsForConstructor = 0; // Para el caso de que un constructor no aparezca en una carrera intermedia
+
+    seasonProgression.value.races.forEach(race => {
+      const raceStandingForConstructor = race.standings.find(s => s.constructor_id === constructorId);
+      
+      if (raceStandingForConstructor) {
+        lastPointsForConstructor = parseFloat(raceStandingForConstructor.points);
+        accumulatedPointsData.push(lastPointsForConstructor);
+      } else {
+        // Si el constructor no está en los standings de esta carrera (ej. no participó o no hay datos),
+        // mantenemos sus puntos anteriores.
+        accumulatedPointsData.push(lastPointsForConstructor);
+      }
+    });
     
     return {
-      label: standing.constructor?.name,
-      data: seasonProgression.value.races.map(race => {
-        const raceStanding = race.standings.find(s => s.constructor_id === standing.constructor?.constructor_id);
-        return raceStanding ? raceStanding.points : 0;
-      }),
+      label: constructorName,
+      data: accumulatedPointsData, // Usar directamente los puntos acumulados de la API
       borderColor: color,
-      backgroundColor: color + '40',
+      backgroundColor: color + '40', // Para el área bajo la línea si fill es true
       fill: false,
       tension: 0.1
     };
   });
   
+  // Asegurarse de que todos los datasets tengan la misma longitud que el número de carreras
+  // (Esto podría ser redundante si la API siempre devuelve datos para todos los constructores en todas las carreras,
+  // pero es una buena salvaguarda)
+  const numRaces = seasonProgression.value.races.length;
+  datasets.forEach(ds => {
+    if (ds.data.length < numRaces) {
+      const diff = numRaces - ds.data.length;
+      const lastVal = ds.data.length > 0 ? ds.data[ds.data.length - 1] : 0;
+      for (let i = 0; i < diff; i++) {
+        ds.data.push(lastVal); // Rellenar con el último valor conocido
+      }
+    }
+  });
+
   return {
     labels: seasonProgression.value.races.map(r => r.name),
     datasets
@@ -420,11 +449,11 @@ function getConstructorColor(constructorName) {
     'Scuderia Ferrari HP': '#DC0000',
     'McLaren F1 Team': '#FF8700',
     'Aston Martin Aramco Cognizant F1 Team': '#006F62',
-    'BWT Alpine F1 Team': '#0090FF',
+    'BWT Alpine Formula One Team': '#0090FF',
     'Williams Racing': '#005AFF',
-    'Visa Cash App RB F1 Team': '#2B4562',
-    'Stake F1 Team Kick Sauber': '#900000',
-    'MoneyGram Haas F1 Team': '#FFFFFF'
+    'Visa Cash App Racing Bulls Formula One Team': '#2B4562',
+    'Stake F1 Team Kick Sauber': '#00E700',
+    'MoneyGram Haas F1 Team': '#9C9FA2'
   };
   
   // Partial search if exact match not found

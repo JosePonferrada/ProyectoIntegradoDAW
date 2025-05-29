@@ -215,17 +215,29 @@ class DriverStandingController extends Controller
     try {
       $season = \App\Models\Season::findOrFail($seasonId);
       $currentYear = $season->year;
-      
+
       // Obtener todas las carreras de la temporada en orden cronológico
       $races = \App\Models\Race::where('season_id', $seasonId)
           ->orderBy('race_date', 'asc')
           ->get();
-      
-      // Primero, obtener la información de driver_constructor_seasons para este año
+
+      // Obtener todos los pilotos que participan en esta temporada
+      // (ya sea por tener resultados o estar asignados a un constructor)
+      $allSeasonDriverModels = \App\Models\Driver::query()
+          ->whereHas('raceResults.race', function ($query) use ($seasonId) {
+              $query->where('season_id', $seasonId);
+          })
+          ->orWhereHas('seasons', function ($query) use ($seasonId) { // CAMBIO AQUÍ: 'driverConstructorSeasons' a 'seasons'
+              $query->where('seasons.season_id', $seasonId); // Asegúrate de calificar la columna season_id con el nombre de la tabla
+          })
+          ->with(['nationality']) // Cargar nacionalidad si es necesario para el frontend
+          ->get();
+
+      // Mapear información de constructores para la temporada actual
       $driverConstructorsMap = \DB::table('driver_constructor_seasons')
           ->join('seasons', 'driver_constructor_seasons.season_id', '=', 'seasons.season_id')
           ->join('constructors', 'driver_constructor_seasons.constructor_id', '=', 'constructors.constructor_id')
-          ->where('seasons.year', $currentYear)
+          ->where('seasons.year', $currentYear) // Usar el año de la temporada actual
           ->select(
               'driver_constructor_seasons.driver_id',
               'driver_constructor_seasons.constructor_id',
@@ -235,49 +247,92 @@ class DriverStandingController extends Controller
           )
           ->get()
           ->keyBy('driver_id');
-      
-      $raceData = $races->map(function($race) use ($driverConstructorsMap) {
-          // Obtener clasificación después de esta carrera
-          $standings = DriverStanding::where('race_id', $race->race_id)
-              ->with(['driver'])
-              ->orderBy('position', 'asc')
-              ->get();
-          
-          return [
+
+      // Inicializar datos acumulados para todos los pilotos de la temporada
+      $driverAccumulatedData = [];
+      foreach ($allSeasonDriverModels as $driverModel) {
+          $driverAccumulatedData[$driverModel->driver_id] = [
+              'driver_id' => $driverModel->driver_id,
+              'points' => 0,
+              'wins' => 0,
+              'driver_model' => $driverModel, // Guardar el modelo para acceso a code/name
+              'constructor_info' => $driverConstructorsMap[$driverModel->driver_id] ?? null,
+          ];
+      }
+
+      $raceProgressionOutput = [];
+
+      foreach ($races as $race) {
+          // Obtener resultados de la carrera actual
+          $currentRaceResults = \App\Models\RaceResult::where('race_id', $race->race_id)->get();
+
+          // Actualizar puntos y victorias acumuladas
+          foreach ($currentRaceResults as $result) {
+              if (isset($driverAccumulatedData[$result->driver_id])) {
+                  $driverAccumulatedData[$result->driver_id]['points'] += $result->points;
+                  if ($result->position == 1) {
+                      $driverAccumulatedData[$result->driver_id]['wins']++;
+                  }
+              }
+          }
+
+          // Crear la estructura de standings para esta carrera con datos acumulados
+          $currentRaceStandings = [];
+          foreach ($driverAccumulatedData as $driverId => $data) {
+              $currentRaceStandings[] = [
+                  'driver_id' => $driverId,
+                  'constructor_id' => $data['constructor_info'] ? $data['constructor_info']->constructor_id : null,
+                  'constructor_name' => $data['constructor_info'] ? $data['constructor_info']->constructor_name : null,
+                  'constructor_logo' => $data['constructor_info'] ? $data['constructor_info']->constructor_logo : null,
+                  'position_number' => $data['constructor_info'] ? $data['constructor_info']->position_number : null,
+                  'points' => (float) $data['points'], // Asegurar que los puntos son numéricos
+                  'wins' => (int) $data['wins'],     // Asegurar que las victorias son numéricas
+                  'driver_code' => $data['driver_model']->code ?? null,
+                  'driver_name' => $data['driver_model']->full_name ?? null,
+                  // 'position' se calculará después de ordenar
+              ];
+          }
+
+          // Ordenar standings para determinar la posición
+          // Criterios: Puntos (desc), Victorias (desc), luego por ID de piloto (asc) como desempate estable
+          usort($currentRaceStandings, function ($a, $b) {
+              if ($b['points'] != $a['points']) {
+                  return $b['points'] <=> $a['points'];
+              }
+              if ($b['wins'] != $a['wins']) {
+                  return $b['wins'] <=> $a['wins'];
+              }
+              // Podrías añadir más criterios de desempate si es necesario (ej. número de 2dos puestos, etc.)
+              return $a['driver_id'] <=> $b['driver_id']; // Desempate por ID
+          });
+
+          // Asignar posición
+          foreach ($currentRaceStandings as $idx => &$standingEntry) { // Pasar por referencia para modificar
+              $standingEntry['position'] = $idx + 1;
+          }
+          unset($standingEntry); // Romper la referencia
+
+          $raceProgressionOutput[] = [
               'id' => $race->race_id,
               'name' => $race->name,
               'date' => $race->race_date,
-              'standings' => $standings->map(function($standing) use ($driverConstructorsMap) {
-                  // Obtener información del constructor directamente del mapa
-                  $driverInfo = $driverConstructorsMap[$standing->driver_id] ?? null;
-                  
-                  return [
-                      'driver_id' => $standing->driver_id,
-                      'constructor_id' => $driverInfo ? $driverInfo->constructor_id : null,
-                      'constructor_name' => $driverInfo ? $driverInfo->constructor_name : null,
-                      'constructor_logo' => $driverInfo ? $driverInfo->constructor_logo : null,
-                      'position_number' => $driverInfo ? $driverInfo->position_number : null, // Posición en el equipo
-                      'points' => $standing->points,
-                      'position' => $standing->position, // Posición en la clasificación
-                      'driver_code' => $standing->driver->code ?? null,
-                      'driver_name' => $standing->driver->full_name ?? null,
-                  ];
-              })
+              'standings' => $currentRaceStandings,
           ];
-      });
+      }
       
       return response()->json([
           'season_id' => $season->season_id,
           'year' => $season->year,
-          'races' => $raceData
+          'races' => $raceProgressionOutput
       ]);
-      } catch (\Exception $e) {
-          \Log::error('Error getting driver progression: ' . $e->getMessage());
-          return response()->json([
-              'message' => 'Error getting driver progression',
-              'error' => $e->getMessage()
-          ], 500);
-      }
+
+    } catch (\Exception $e) {
+        \Log::error('Error getting driver progression: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+        return response()->json([
+            'message' => 'Error getting driver progression',
+            'error' => $e->getMessage()
+        ], 500);
+    }
   }
 
   /**

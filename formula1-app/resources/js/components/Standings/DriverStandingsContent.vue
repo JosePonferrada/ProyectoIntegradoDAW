@@ -367,6 +367,11 @@ const chartOptions = {
           return driver ? `Team: ${driver.constructor?.name || 'N/A'}` : '';
         }
       }
+    },
+    legend: { // <-- Añadir configuración de color para las etiquetas de la leyenda
+      labels: {
+        color: document.documentElement.classList.contains('dark') ? '#ddd' : '#666'
+      }
     }
   },
   scales: {
@@ -396,61 +401,65 @@ const chartOptions = {
 
 // Datos para el gráfico de progresión
 const progressionData = computed(() => {
-  if (!seasonProgression.value || !seasonProgression.value.races) return null;
+  if (!seasonProgression.value || !seasonProgression.value.races || seasonProgression.value.races.length === 0) return null;
   
-  // Obtener datos de la primera carrera para establecer colores consistentes
   const firstRaceStandings = seasonProgression.value.races[0]?.standings || [];
-  
-  // Agrupar pilotos por constructor para asignar colores coherentes
   const constructorDrivers = {};
   
-  // Primero agrupamos los pilotos por constructor
   firstRaceStandings.forEach(standing => {
-    const constructorId = standing.constructor_id;
+    const constructorId = standing.constructor_id || 'unknown_constructor'; // Manejar null constructor_id
     if (!constructorDrivers[constructorId]) {
       constructorDrivers[constructorId] = [];
     }
-    constructorDrivers[constructorId].push(standing);
+    // Solo añadir si el piloto tiene un ID, para evitar errores
+    if (standing.driver_id) {
+        constructorDrivers[constructorId].push(standing);
+    }
   });
   
-  // Creamos los datasets ordenados por constructor
   const datasets = [];
   
-  // Para cada constructor, procesamos sus pilotos
   Object.entries(constructorDrivers).forEach(([constructorId, drivers]) => {
-    // Ordenamos los pilotos por posición dentro del equipo
     drivers.sort((a, b) => (a.position_number || 999) - (b.position_number || 999));
     
-    // Obtenemos el color del constructor una sola vez
-    const baseColor = getTeamColor(drivers[0].constructor_name || drivers[0].constructor_id || drivers[0].driver_code);
+    const baseColor = getTeamColor(drivers[0]?.constructor_name || drivers[0]?.constructor_id || drivers[0]?.driver_code);
     
-    // Para cada piloto del constructor, creamos su dataset con el estilo correspondiente
-    drivers.forEach((standing, index) => {
-      const driverCode = standing.driver_code || 'Unknown';
-      
-      // Todos los pilotos del mismo equipo comparten el mismo color base
+    drivers.forEach((initialStanding, index) => {
+      const driverId = initialStanding.driver_id;
+      // Si no hay driverId, no podemos procesar a este piloto para la progresión
+      if (!driverId) return;
+
+      const driverCode = initialStanding.driver_code || `Driver ${driverId}`;
       const color = baseColor || getTeamColor(driverCode);
       
-      // El estilo de línea se basa en la posición en el equipo
       let borderDash = [];
       let borderWidth = 3;
+      if (index === 1) borderDash = [5, 5];
+      else if (index > 1) { borderDash = [2, 2]; borderWidth = 2; }
       
-      // Primer piloto: línea sólida, segundo: discontinua, resto: punteada
-      if (index === 1) {
-        borderDash = [5, 5];  // línea discontinua para segundo piloto
-      } else if (index > 1) {
-        borderDash = [2, 2];  // línea de puntos para reserva/prueba
-        borderWidth = 2;
-      }
+      // SIMPLIFICACIÓN AQUÍ:
+      // La API ahora devuelve los puntos acumulados directamente para cada carrera.
+      const accumulatedPointsData = [];
+      let lastPointsForDriver = 0; // Para el caso de que un piloto no aparezca en una carrera intermedia
+
+      seasonProgression.value.races.forEach(race => {
+        const raceStandingForDriver = race.standings.find(s => s.driver_id === driverId);
+        
+        if (raceStandingForDriver) {
+          lastPointsForDriver = parseFloat(raceStandingForDriver.points);
+          accumulatedPointsData.push(lastPointsForDriver);
+        } else {
+          // Si el piloto no está en los standings de esta carrera (ej. no participó o no hay datos),
+          // mantenemos sus puntos anteriores.
+          accumulatedPointsData.push(lastPointsForDriver);
+        }
+      });
       
       datasets.push({
         label: driverCode,
-        data: seasonProgression.value.races.map(race => {
-          const raceStanding = race.standings.find(s => s.driver_id === standing.driver_id);
-          return raceStanding ? raceStanding.points : 0;
-        }),
+        data: accumulatedPointsData, // Usar directamente los puntos acumulados de la API
         borderColor: color,
-        backgroundColor: color + '40',
+        backgroundColor: color + '40', // Para el área bajo la línea si fill es true
         fill: false,
         tension: 0.1,
         borderWidth: borderWidth,
@@ -459,6 +468,18 @@ const progressionData = computed(() => {
     });
   });
   
+  // Asegurarse de que todos los datasets tengan la misma longitud que el número de carreras
+  const numRaces = seasonProgression.value.races.length;
+  datasets.forEach(ds => {
+    if (ds.data.length < numRaces) {
+      const diff = numRaces - ds.data.length;
+      const lastVal = ds.data.length > 0 ? ds.data[ds.data.length - 1] : 0;
+      for (let i = 0; i < diff; i++) {
+        ds.data.push(lastVal);
+      }
+    }
+  });
+
   return {
     labels: seasonProgression.value.races.map(r => r.name),
     datasets
@@ -522,10 +543,10 @@ function getTeamColor(data) {
     'aston martin': '#006F62',
     'alpine': '#0090FF',
     'rb': '#2B4562',
-    'alphatauri': '#2B4562', 
-    'haas': '#FFFFFF',
+    'visa cash': '#2B4562', 
+    'haas': '#9C9FA2',
     'williams': '#005AFF',
-    'alfa romeo': '#900000',
+    'kick sauber': '#00E700',
     
     // Por ID numérico
     1: '#0600EF',  // Red Bull
@@ -534,22 +555,11 @@ function getTeamColor(data) {
     4: '#FF8700',  // McLaren
     5: '#006F62',  // Aston Martin
     6: '#0090FF',  // Alpine
-    7: '#2B4562',  // RB/AlphaTauri
-    8: '#FFFFFF',  // Haas
+    7: '#2B4562',  // Visa Cash
+    8: '#9C9FA2',  // Haas
     9: '#005AFF',  // Williams
-    10: '#900000', // Alfa Romeo
-    
-    // Por código de pilotos
-    'VER': '#0600EF', 'PER': '#0600EF',  // Red Bull
-    'HAM': '#00D2BE', 'RUS': '#00D2BE',  // Mercedes
-    'LEC': '#DC0000', 'SAI': '#DC0000',  // Ferrari  
-    'NOR': '#FF8700', 'PIA': '#FF8700',  // McLaren
-    'ALO': '#006F62', 'STR': '#006F62',  // Aston Martin
-    'GAS': '#0090FF', 'OCO': '#0090FF',  // Alpine
-    'TSU': '#2B4562', 'SAR': '#2B4562',  // RB/AlphaTauri
-    'HUL': '#FFFFFF', 'MAG': '#FFFFFF',  // Haas
-    'ALB': '#005AFF', 'LAW': '#005AFF',  // Williams
-    'BOT': '#900000', 'ZHO': '#900000'   // Alfa Romeo
+    10: '#00E700', // Kick Sauber
+
   };
   
   // Intentar varias posibilidades
