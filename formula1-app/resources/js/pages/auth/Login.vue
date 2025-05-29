@@ -1,8 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
-import Heading from '@/components/Heading.vue';
-import TextLink from '@/components/TextLink.vue';
 
 const form = useForm({
   email: '',
@@ -28,18 +26,18 @@ const submit = () => {
     <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0 bg-gradient-to-b from-gray-900 to-gray-800">
       <!-- Logo o imagen F1 -->
       <div class="flex justify-center w-full mb-8 sm:max-w-md">
-        <div class="p-4 sm:p-6 bg-black bg-opacity-50 rounded-lg shadow-lg">
+        <div class="p-4 sm:p-6">
           <img 
-  src="/img/logo-f1.svg" 
-  alt="F1 Logo" 
-  class="h-16 mx-auto dark:invert dark:brightness-200" 
-/>
+            src="/img/logo-f1.png" 
+            alt="F1 Logo" 
+            class="h-40 mx-auto" 
+          />
         </div>
       </div>
 
       <div class="w-full sm:max-w-md mt-6 px-6 py-8 bg-gray-800 shadow-md overflow-hidden sm:rounded-lg border-t-4 border-red-600">
         <!-- Encabezado -->
-        <h1 class="text-2xl font-bold text-white text-center mb-6">Acceso pilotos</h1>
+        <h1 class="text-2xl font-bold text-white text-center mb-6">Driver Access</h1>
         
         <form @submit.prevent="submit">
           <!-- Email -->
@@ -53,7 +51,7 @@ const submit = () => {
               required
               autofocus
               autocomplete="username"
-              placeholder="piloto@equipo.com"
+              placeholder="driver@team.com"
             />
             <InputError class="mt-2" :message="form.errors.email" />
           </div>
@@ -82,12 +80,12 @@ const submit = () => {
               name="remember"
               class="rounded border-gray-600 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 bg-gray-700"
             />
-            <label for="remember_me" class="ml-2 text-sm text-gray-300">Recordarme</label>
+            <label for="remember_me" class="ml-2 text-sm text-gray-300">Remember me</label>
           </div>
 
           <div class="flex items-center justify-between mt-6">
             <Link :href="route('password.request')" class="text-sm text-gray-400 hover:text-red-400">
-              ¿Olvidaste tu contraseña?
+              Forgot your password?
             </Link>
 
             <button
@@ -95,14 +93,14 @@ const submit = () => {
               class="px-6 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-900 focus:outline-none focus:border-red-900 focus:ring focus:ring-red-300 disabled:opacity-25 transition"
               :disabled="form.processing"
             >
-              Iniciar sesión
+              Log in
             </button>
           </div>
           
           <div class="mt-8 text-center">
-            <span class="text-gray-400">¿Aún no tienes una cuenta?</span>
+            <span class="text-gray-400">Don't have an account yet?</span>
             <Link :href="route('register')" class="ml-1 text-red-500 hover:text-red-400">
-              Regístrate
+              Sign up
             </Link>
           </div>
           

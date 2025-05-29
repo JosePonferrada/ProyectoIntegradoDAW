@@ -44,24 +44,24 @@ const submit = () => {
 
 <template>
   <div>
-    <Head title="Registro" />
+    <Head title="Register" />
 
     <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0 bg-gradient-to-b from-gray-900 to-gray-800">
       <!-- Logo con fondo para que se vea bien en modo oscuro -->
       <div class="flex justify-center w-full mb-8 sm:max-w-md">
-        <div class="p-4 sm:p-6 bg-black bg-opacity-50 rounded-lg shadow-lg">
-          <img src="/img/logo-f1.svg" alt="F1 Logo" class="h-16 mx-auto" />
+        <div class="p-4 sm:p-6">
+          <img src="/img/logo-f1.png" alt="F1 Logo" class="h-40 mx-auto" />
         </div>
       </div>
 
       <div class="w-full sm:max-w-md px-6 py-8 bg-gray-800 shadow-md overflow-hidden sm:rounded-lg border-t-4 border-red-600">
         <!-- Encabezado -->
-        <h1 class="text-2xl font-bold text-white text-center mb-6">Registro de pilotos</h1>
+        <h1 class="text-2xl font-bold text-white text-center mb-6">Driver Registration</h1>
         
         <form @submit.prevent="submit" enctype="multipart/form-data">
           <!-- Nombre -->
           <div>
-            <label for="name" class="block text-sm font-medium text-gray-300">Nombre</label>
+            <label for="name" class="block text-sm font-medium text-gray-300">Name</label>
             <input
               id="name"
               v-model="form.name"
@@ -90,13 +90,13 @@ const submit = () => {
 
           <!-- País -->
           <div class="mt-4">
-            <label for="country" class="block text-sm font-medium text-gray-300">País</label>
+            <label for="country" class="block text-sm font-medium text-gray-300">Country</label>
             <select
               id="country"
               v-model="form.country_id"
               class="mt-1 block w-full bg-gray-700 border-gray-600 focus:border-red-500 focus:ring-red-500 rounded-md shadow-sm text-white p-2"
             >
-              <option value="" disabled selected>Selecciona tu país</option>
+              <option value="" disabled selected>Select your country</option>
               <option v-for="country in countries" :key="country.country_id" :value="country.country_id">
                 {{ country.name }}
               </option>
@@ -107,13 +107,13 @@ const submit = () => {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <!-- Piloto favorito -->
             <div>
-              <label for="driver" class="block text-sm font-medium text-gray-300">Piloto favorito</label>
+              <label for="driver" class="block text-sm font-medium text-gray-300">Favorite Driver</label>
               <select
                 id="driver"
                 v-model="form.favorite_driver_id"
                 class="mt-1 block w-full bg-gray-700 border-gray-600 focus:border-red-500 focus:ring-red-500 rounded-md shadow-sm text-white p-2"
               >
-                <option value="" disabled selected>Selecciona</option>
+                <option value="" disabled selected>Select</option>
                 <option v-for="driver in drivers" :key="driver.driver_id" :value="driver.driver_id">
                   {{ driver.first_name }} {{ driver.last_name }}
                 </option>
@@ -123,13 +123,13 @@ const submit = () => {
 
             <!-- Constructor favorito -->
             <div>
-              <label for="constructor" class="block text-sm font-medium text-gray-300">Escudería favorita</label>
+              <label for="constructor" class="block text-sm font-medium text-gray-300">Favorite Team</label>
               <select
                 id="constructor"
                 v-model="form.favorite_constructor_id"
                 class="mt-1 block w-full bg-gray-700 border-gray-600 focus:border-red-500 focus:ring-red-500 rounded-md shadow-sm text-white p-2"
               >
-                <option value="" disabled selected>Selecciona</option>
+                <option value="" disabled selected>Select</option>
                 <option v-for="constructor in constructors" :key="constructor.constructor_id" :value="constructor.constructor_id">
                   {{ constructor.name }}
                 </option>
@@ -140,7 +140,7 @@ const submit = () => {
 
           <!-- Avatar -->
           <div class="mt-4">
-            <label for="avatar" class="block text-sm font-medium text-gray-300">Avatar (Opcional)</label>
+            <label for="avatar" class="block text-sm font-medium text-gray-300">Avatar (Optional)</label>
             <div class="mt-1 flex items-center space-x-2">
               <div v-if="form.avatar" class="flex items-center">
                 <img 
@@ -154,7 +154,7 @@ const submit = () => {
               <label 
                 class="relative cursor-pointer bg-gray-700 hover:bg-gray-600 py-2 px-4 rounded-md text-white text-sm"
               >
-                <span>Seleccionar imagen</span>
+                <span>Select image</span>
                 <input 
                   id="avatar" 
                   name="avatar" 
@@ -170,16 +170,16 @@ const submit = () => {
                 class="text-red-400 hover:text-red-500 text-sm"
                 @click="form.avatar = null"
               >
-                Eliminar
+                Remove
               </button>
             </div>
-            <p class="mt-1 text-xs text-gray-400">PNG, JPG o GIF (max. 2MB)</p>
+            <p class="mt-1 text-xs text-gray-400">PNG, JPG or GIF (max. 2MB)</p>
             <InputError class="mt-2" :message="form.errors.avatar" />
           </div>
 
           <!-- Contraseña -->
           <div class="mt-4">
-            <label for="password" class="block text-sm font-medium text-gray-300">Contraseña</label>
+            <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
             <input
               id="password"
               v-model="form.password"
@@ -192,7 +192,7 @@ const submit = () => {
           </div>
 
           <div class="mt-4">
-            <label for="password_confirmation" class="block text-sm font-medium text-gray-300">Confirmar contraseña</label>
+            <label for="password_confirmation" class="block text-sm font-medium text-gray-300">Confirm Password</label>
             <input
               id="password_confirmation"
               v-model="form.password_confirmation"
@@ -206,7 +206,7 @@ const submit = () => {
 
           <div class="flex items-center justify-between mt-6">
             <Link :href="route('login')" class="text-sm text-gray-400 hover:text-red-400">
-              ¿Ya tienes cuenta?
+              Already registered?
             </Link>
 
             <button
@@ -214,7 +214,7 @@ const submit = () => {
               class="px-6 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-900 focus:outline-none focus:border-red-900 focus:ring focus:ring-red-300 disabled:opacity-25 transition"
               :disabled="form.processing"
             >
-              Registrarse
+              Register
             </button>
           </div>
           
@@ -230,7 +230,7 @@ const submit = () => {
       </div>
       
       <div class="mt-6 text-center text-sm text-gray-500">
-        Formula 1 App © {{ new Date().getFullYear() }}
+        Formula 1 App &copy; {{ new Date().getFullYear() }}
       </div>
     </div>
   </div>
