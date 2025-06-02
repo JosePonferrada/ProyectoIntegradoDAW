@@ -201,7 +201,7 @@ const features = [
           <div>
             <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase mb-4">Quick Links</h3>
             <ul class="space-y-3">
-              <li><Link :href="user ? route('dashboard') : route('welcome')" class="text-base text-gray-300 hover:text-white transition-colors">Dashboard</Link></li>
+              <li><Link :href="user ? route('dashboard') : route('home')" class="text-base text-gray-300 hover:text-white transition-colors">Dashboard</Link></li>
               <li><Link :href="route('drivers.index')" class="text-base text-gray-300 hover:text-white transition-colors">Drivers</Link></li>
               <li><Link :href="route('constructors')" class="text-base text-gray-300 hover:text-white transition-colors">Teams</Link></li>
               <li><Link :href="route('races.index')" class="text-base text-gray-300 hover:text-white transition-colors">Races</Link></li>
