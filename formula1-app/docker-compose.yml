@@ -1,0 +1,121 @@
+version: '3.8'
+
+
+services:
+
+  app:
+
+    build: .
+
+    container_name: formula1_app
+
+    restart: unless-stopped
+
+    working_dir: /var/www
+
+    volumes:
+
+      - ./:/var/www
+
+      - ./storage:/var/www/storage
+
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+
+    networks:
+
+      - formula1_network
+
+    depends_on:
+
+      - db
+
+
+  nginx:
+
+    image: nginx:alpine
+
+    container_name: formula1_nginx
+
+    restart: unless-stopped
+
+    ports:
+
+      - "80:80"
+
+      - "443:443"
+
+    volumes:
+
+      - ./:/var/www
+
+      - ./docker/nginx:/etc/nginx/conf.d
+
+    networks:
+
+      - formula1_network
+
+    depends_on:
+
+      - app
+
+
+  db:
+
+    image: mysql:8.0
+
+    container_name: formula1_db
+
+    restart: unless-stopped
+
+    environment:
+
+      MYSQL_DATABASE: formula1-app
+
+      MYSQL_ROOT_PASSWORD: root
+
+      MYSQL_PASSWORD: abc123.
+
+      MYSQL_USER: dwes
+
+    volumes:
+
+      - db_data:/var/lib/mysql
+
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+
+    ports:
+
+      - "3306:3306"
+
+    networks:
+
+      - formula1_network
+
+
+  redis:
+
+    image: redis:alpine
+
+    container_name: formula1_redis
+
+    restart: unless-stopped
+
+    ports:
+
+      - "6379:6379"
+
+    networks:
+
+      - formula1_network
+
+
+volumes:
+
+  db_data:
+
+
+networks:
+
+  formula1_network:
+
+    driver: bridge
