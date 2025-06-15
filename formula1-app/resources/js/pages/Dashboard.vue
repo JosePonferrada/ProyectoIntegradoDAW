@@ -140,7 +140,7 @@ onMounted(async () => {
     // Next race circuit info  
     if (upcomingRaces.value.length > 0) {
       const nextRaceId = upcomingRaces.value[0].id;
-      const circuitRes = await axios.get(`/api/circuits/${nextRaceId}`);
+      // const circuitRes = await axios.get(`/api/circuits/${nextRaceId}`);
     }
     
     // Driver and constructor standings
